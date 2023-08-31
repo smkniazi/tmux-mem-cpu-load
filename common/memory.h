@@ -53,6 +53,6 @@ std::string mem_string( const MemoryStatus & mem_status,
   bool use_powerline_left = false,
   bool use_powerline_right = false,
   bool segments_to_left = false,
-  short left_color = 0 );
+  short left_color = 0, bool use_simple = false);
 
 #endif

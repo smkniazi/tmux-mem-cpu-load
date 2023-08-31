@@ -30,9 +30,19 @@ std::string mem_string( const MemoryStatus & mem_status,
   bool use_powerline_left,
   bool use_powerline_right,
   bool segments_to_left,
-  short left_color )
+  short left_color,
+  bool use_simple)
 {
   std::ostringstream oss;
+
+  if (use_simple) {
+    oss.precision( 0 );
+    const float percentage_mem = mem_status.used_mem /
+      static_cast<float>( mem_status.total_mem ) * 100.0;
+      oss << (int)percentage_mem << '%';
+    return oss.str();
+  }
+
   // Change the percision for floats, for a pretty output
   oss.precision( 2 );
   oss.setf( std::ios::fixed | std::ios::right );

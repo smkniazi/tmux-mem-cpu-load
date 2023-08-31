@@ -37,7 +37,7 @@
 
 std::string cpu_string( CPU_MODE cpu_mode, unsigned int cpu_usage_delay, unsigned int graph_lines,
     bool use_colors = false,
-    bool use_powerline_left = false, bool use_powerline_right = false, bool use_vert_graph = false)
+    bool use_powerline_left = false, bool use_powerline_right = false, bool use_vert_graph = false, bool use_simple = false)
 {
 
   float percentage;
@@ -50,6 +50,13 @@ std::string cpu_string( CPU_MODE cpu_mode, unsigned int cpu_usage_delay, unsigne
 
   // get %
   percentage = cpu_percentage( cpu_usage_delay );
+
+  if (use_simple) {
+    oss.precision( 0 );
+    unsigned int percent = static_cast<unsigned int>( percentage );
+    oss << percent<<"%";
+    return oss.str(); 
+  }
 
   // set multiplier to number of threads ?
   if ( cpu_mode == CPU_MODE_THREADS )
@@ -125,6 +132,8 @@ void print_help()
     << "\t Prints this help message\n"
     << "-c, --colors\n"
     << "\tUse tmux colors in output\n"
+    << "-s, --simple\n"
+    << "\tSimple output. e.g. CPU: 2%. MEM: 20%.\n"
     << "-p, --powerline-left\n"
     << "\tUse powerline left symbols throughout the output, enables --colors\n"
     << "-q, --powerline-right\n"
@@ -159,6 +168,7 @@ int main( int argc, char** argv )
   short graph_lines = 10; // max 32767 should be enough
   short left_color = 0;
   short right_color = 0;
+  bool use_simple = false;
   bool use_colors = false;
   bool use_powerline_left = false;
   bool use_powerline_right = false;
@@ -176,6 +186,7 @@ int main( int argc, char** argv )
     // otherwise it's a value to set the variable *flag points to
     { "help", no_argument, NULL, 'h' },
     { "colors", no_argument, NULL, 'c' },
+    { "simple", no_argument, NULL, 's' },
     { "powerline-left", no_argument, NULL, 'p' },
     { "powerline-right", no_argument, NULL, 'q' },
     { "vertical-graph", no_argument, NULL, 'v' },
@@ -191,7 +202,7 @@ int main( int argc, char** argv )
 
   int c;
   // while c != -1
-  while( (c = getopt_long( argc, argv, "hi:cpqvl:r:g:m:a:t:", long_options, NULL) ) != -1 )
+  while( (c = getopt_long( argc, argv, "hi:cspqvl:r:g:m:a:t:", long_options, NULL) ) != -1 )
   {
     switch( c )
     {
@@ -201,6 +212,9 @@ int main( int argc, char** argv )
         break;
       case 'c': // --colors
         use_colors = true;
+        break;
+      case 's': // --simple
+        use_simple = true;
         break;
       case 'p': // --powerline-left
         use_colors = true;
@@ -291,9 +305,15 @@ int main( int argc, char** argv )
 
   MemoryStatus memory_status;
   mem_status( memory_status );
+  if (!use_simple){
   std::cout << mem_string( memory_status, mem_mode, use_colors, use_powerline_left, use_powerline_right, segments_to_left, left_color )
     << cpu_string( cpu_mode, cpu_usage_delay, graph_lines, use_colors, use_powerline_left, use_powerline_right, use_vert_graph )
     << load_string( use_colors, use_powerline_left, use_powerline_right, averages_count, segments_to_right, right_color );
+  } else {
+    std::cout<<"CPU: "<<cpu_string( cpu_mode, cpu_usage_delay, graph_lines, use_colors, use_powerline_left, use_powerline_right, use_vert_graph , use_simple);
+    std::cout<<" ";
+    std::cout<<"MEM: "<<mem_string( memory_status, mem_mode, use_colors, use_powerline_left, use_powerline_right, segments_to_left, left_color, use_simple );
+  }
 
   std::cout << std::endl;
 
